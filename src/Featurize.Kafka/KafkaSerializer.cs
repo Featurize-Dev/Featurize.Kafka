@@ -20,7 +20,7 @@ internal class KafkaSerializer<T> : ISerializer<T>
     }
 }
 
-public class KafkaDeserializer<T> : IDeserializer<T>
+internal class KafkaDeserializer<T> : IDeserializer<T>
 {
     private readonly JsonSerializerOptions _options;
     private readonly ILogger _logger;

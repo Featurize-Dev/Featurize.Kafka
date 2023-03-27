@@ -6,31 +6,25 @@ using System.Reflection;
 
 namespace Kafka;
 
-public interface IConfigureFeatureOptions<TOptions>
-{
-    void Configure(TOptions options);
-}
-
+/// <summary>
+/// Adds AddKafka extension to the feature collection.
+/// </summary>
 public static class FeatureCollectionExtensions
 {
-    public static IFeatureCollection AddWithOptions<TFeature, TConfig>(this IFeatureCollection features, Action<TConfig>? config = null) where TFeature : IFeatureWithOptions<TFeature, TConfig> where TConfig : class, new()
-    {
-        TConfig val = new();
-        config?.Invoke(val);
-
-        foreach (var subFeature in features.OfType<IConfigureFeatureOptions<TConfig>>())
-        {
-            subFeature.Configure(val);
-        }
-
-        return features.Add(TFeature.Create(val));
-    }
-
+    /// <summary>
+    /// Adds kafka messaging feature to the feature collection
+    /// </summary>
+    /// <param name="service">The feature collection to add Kafka feature to.</param>
+    /// <param name="options">The options needed to configure kafka.</param>
+    /// <returns></returns>
     public static IFeatureCollection AddKafka(this IFeatureCollection service, Action<KafkaOptions>? options = null)
         => service.AddWithOptions<KafkaFeature, KafkaOptions>(options);
 }
 
-public class KafkaFeature : IFeatureWithOptions<KafkaFeature, KafkaOptions>, IServiceCollectionFeature
+internal class KafkaFeature : 
+    IFeatureWithOptions<KafkaFeature, KafkaOptions>,
+    IFeatureWithConfigurableOptions<KafkaOptions>,
+    IServiceCollectionFeature
 {
     private KafkaFeature(KafkaOptions options)
     {
