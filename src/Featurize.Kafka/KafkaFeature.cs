@@ -21,7 +21,11 @@ public static class FeatureCollectionExtensions
         => service.AddWithOptions<KafkaFeature, KafkaOptions>(options);
 }
 
-internal class KafkaFeature : 
+
+/// <summary>
+/// Feature for enable Kafka Messaging
+/// </summary>
+public class KafkaFeature : 
     IFeatureWithOptions<KafkaFeature, KafkaOptions>,
     IFeatureWithConfigurableOptions<KafkaOptions>,
     IServiceCollectionFeature
@@ -31,13 +35,25 @@ internal class KafkaFeature :
         Options = options;
     }
 
+    /// <summary>
+    /// Options to configure a feature
+    /// </summary>
     public KafkaOptions Options { get; }
 
+    /// <summary>
+    /// Creates a instance of the Kafka Feature
+    /// </summary>
+    /// <param name="config">The configuration of new Kafka Feature</param>
+    /// <returns>A Instance of the kafka feature.</returns>
     public static KafkaFeature Create(KafkaOptions config)
     {
         return new KafkaFeature(config);
     }
 
+    /// <summary>
+    /// Configures services used by the kafka messaging feature
+    /// </summary>
+    /// <param name="services"></param>
     public void Configure(IServiceCollection services)
     {
         services.AddSingleton(Options.SerializerOptions);
