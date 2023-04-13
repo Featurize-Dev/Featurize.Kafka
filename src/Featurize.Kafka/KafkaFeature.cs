@@ -1,5 +1,6 @@
 using Confluent.Kafka;
 using Featurize;
+using Featurize.Kafka;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
@@ -25,14 +26,10 @@ public static class FeatureCollectionExtensions
 /// <summary>
 /// Feature for enable Kafka Messaging
 /// </summary>
-public class KafkaFeature : 
+public sealed class KafkaFeature : 
     IFeatureWithOptions<KafkaFeature, KafkaOptions>,
     IFeatureWithConfigurableOptions<KafkaOptions>,
     IServiceCollectionFeature
-/// <summary>
-/// A Kafka Feature for registering consumers and Producers
-/// </summary>
-public class KafkaFeature : IFeatureWithOptions<KafkaFeature, KafkaOptions>, IServiceCollectionFeature
 {
     private KafkaFeature(KafkaOptions options)
     {
@@ -69,10 +66,10 @@ public class KafkaFeature : IFeatureWithOptions<KafkaFeature, KafkaOptions>, ISe
 
     private static void ProducerFactory<TKey, TValue>(IServiceCollection services, ProducerOptions options)
     {
-        services.AddSingleton(s =>
+        services.AddSingleton<Confluent.Kafka.IProducer<TKey, TValue>>(s =>
         {
             var loggerFactory = s.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger<IConsumer<TKey, TValue>>();
+            var logger = loggerFactory.CreateLogger<IProducer<TKey, TValue>>();
             var keySerializer = new KafkaSerializer<TKey>(options.JsonSerializerOptions);
             var valueSerializer = new KafkaSerializer<TValue>(options.JsonSerializerOptions);
 
@@ -84,6 +81,11 @@ public class KafkaFeature : IFeatureWithOptions<KafkaFeature, KafkaOptions>, ISe
                         .Build();
 
             return producer;
+        });
+
+        services.AddSingleton(s => {
+            var producer = s.GetRequiredService<IProducer<TKey, TValue>>();
+            return new Producer<TKey, TValue>(producer, options); ;
         });
     }
 

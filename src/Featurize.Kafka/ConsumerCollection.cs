@@ -64,7 +64,7 @@ public static class ConsumerCollectionExtensions
         var keyType = arguments[0];
         var valueType = arguments[1];
 
-        consumerCollection.Add(new ConsumerInfo(keyType, valueType, handlerType, options));
+        consumerCollection.Add(new ConsumerInfo(handlerType, keyType, valueType, options));
         return consumerCollection;
     }
 }
@@ -72,7 +72,7 @@ public static class ConsumerCollectionExtensions
 /// <summary>
 /// Default ConsumerCollection
 /// </summary>
-public class ConsumerCollection : IConsumerCollection
+public sealed class ConsumerCollection : IConsumerCollection
 {
     private readonly HashSet<ConsumerInfo> _items = new();
     /// <inheritdoc />

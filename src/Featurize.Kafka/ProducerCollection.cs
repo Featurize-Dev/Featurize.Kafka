@@ -25,7 +25,7 @@ public interface IProducerCollection : IReadOnlyCollection<ProducerInfo>
 /// <summary>
 /// A default ProducerCollection
 /// </summary>
-public class ProducerCollection : IProducerCollection
+public sealed class ProducerCollection : IProducerCollection
 {
     private readonly HashSet<ProducerInfo> _items = new();
     /// <inheritdoc />

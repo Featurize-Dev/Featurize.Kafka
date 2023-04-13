@@ -7,7 +7,7 @@ namespace Kafka;
 /// <summary>
 /// The options to configure Kafka Feature
 /// </summary>
-public class KafkaOptions
+public sealed class KafkaOptions
 {
     /// <summary>
     /// The bootstrap service of Kafka
