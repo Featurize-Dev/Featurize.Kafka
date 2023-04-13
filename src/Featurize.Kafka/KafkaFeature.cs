@@ -1,4 +1,4 @@
-﻿using Confluent.Kafka;
+using Confluent.Kafka;
 using Featurize;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -29,35 +29,30 @@ public class KafkaFeature :
     IFeatureWithOptions<KafkaFeature, KafkaOptions>,
     IFeatureWithConfigurableOptions<KafkaOptions>,
     IServiceCollectionFeature
+/// <summary>
+/// A Kafka Feature for registering consumers and Producers
+/// </summary>
+public class KafkaFeature : IFeatureWithOptions<KafkaFeature, KafkaOptions>, IServiceCollectionFeature
 {
     private KafkaFeature(KafkaOptions options)
     {
         Options = options;
     }
 
-    /// <summary>
-    /// Options to configure a feature
-    /// </summary>
+    /// <inheritdoc />
+
     public KafkaOptions Options { get; }
 
-    /// <summary>
-    /// Creates a instance of the Kafka Feature
-    /// </summary>
-    /// <param name="config">The configuration of new Kafka Feature</param>
-    /// <returns>A Instance of the kafka feature.</returns>
+    /// <inheritdoc />
+
     public static KafkaFeature Create(KafkaOptions config)
     {
         return new KafkaFeature(config);
     }
 
-    /// <summary>
-    /// Configures services used by the kafka messaging feature
-    /// </summary>
-    /// <param name="services"></param>
+    /// <inheritdoc />
     public void Configure(IServiceCollection services)
     {
-        services.AddSingleton(Options.SerializerOptions);
-        
         RegisterConsumers(services);
         RegisterProducers(services);
     }
@@ -74,14 +69,12 @@ public class KafkaFeature :
 
     private static void ProducerFactory<TKey, TValue>(IServiceCollection services, ProducerOptions options)
     {
-        services.AddSingleton(typeof(ISerializer<TKey>), options.KeySerializer);
-        services.AddSingleton(typeof(ISerializer<TValue>), options.ValueSerializer);
-
         services.AddSingleton(s =>
         {
-            var logger = s.GetRequiredService<ILogger<ProducerBuilder<TKey, TValue>>>();
-            var keySerializer = s.GetRequiredService<ISerializer<TKey>>();
-            var valueSerializer = s.GetRequiredService<ISerializer<TValue>>();
+            var loggerFactory = s.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<IConsumer<TKey, TValue>>();
+            var keySerializer = new KafkaSerializer<TKey>(options.JsonSerializerOptions);
+            var valueSerializer = new KafkaSerializer<TValue>(options.JsonSerializerOptions);
 
             var producer = new ProducerBuilder<TKey, TValue>(options)
                         .SetKeySerializer(keySerializer)
@@ -108,14 +101,12 @@ public class KafkaFeature :
     private static void ConsumerFactory<THandler, TKey, TValue>(IServiceCollection services, ConsumerOptions options)
         where THandler : class, IConsumerHandler<TKey, TValue>
     {
-        services.AddSingleton(typeof(IDeserializer<TKey>), options.KeyDeserializer); 
-        services.AddSingleton(typeof(IDeserializer<TValue>), options.ValueDeserializer);
-
         services.AddSingleton(s =>
         {
-            var logger = s.GetRequiredService<ILogger<ConsumerBuilder<TKey, TValue>>>();
-            var keyDeserializer = s.GetRequiredService<IDeserializer<TKey>>();
-            var valueDeserializer = s.GetRequiredService<IDeserializer<TValue>>();
+            var loggerFactory = s.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<IConsumer<TKey, TValue>>();
+            var keyDeserializer = new KafkaDeserializer<TKey>(options.JsonSerializerOptions, loggerFactory.CreateLogger<KafkaDeserializer<TKey>>());
+            var valueDeserializer = new KafkaDeserializer<TValue>(options.JsonSerializerOptions, loggerFactory.CreateLogger<KafkaDeserializer<TValue>>());
 
             var consumer = new ConsumerBuilder<TKey, TValue>(options)
                     .SetKeyDeserializer(keyDeserializer)

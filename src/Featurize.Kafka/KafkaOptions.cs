@@ -1,89 +1,85 @@
-﻿using Confluent.Kafka;
+using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
 namespace Kafka;
 
 /// <summary>
-/// Kafka options
+/// The options to configure Kafka Feature
 /// </summary>
 public class KafkaOptions
 {
     /// <summary>
-    /// The kafka bootstrap servers
+    /// The bootstrap service of Kafka
     /// </summary>
     public string BootstrapServers { get; set; } = "localhost:9092";
-
     /// <summary>
-    /// The socket time in miliseconds.
+    /// The time out in miliseconds
     /// </summary>
     public int SocketTimeoutMs { get; set; } = 60000;
     /// <summary>
-    /// The consumer group.
+    /// The Consumer Group Id
     /// </summary>
     public string GroupId { get; set; } = Guid.NewGuid().ToString();
     /// <summary>
-    /// AutoOffsetReset
+    /// Auto offset Reset
     /// </summary>
     public AutoOffsetReset AutoOffsetReset { get; set; } = AutoOffsetReset.Earliest;
 
     /// <summary>
-    /// Collection of Consumer to use.
+    /// Collection of Consumers to register.
     /// </summary>
     public IConsumerCollection Consumers { get; } = new ConsumerCollection();
-
     /// <summary>
-    /// Collection of Producers to use.
+    /// Collection of Producers to register.
     /// </summary>
     public IProducerCollection Producers { get; } = new ProducerCollection();
-
     /// <summary>
-    /// The Json Serializer settings to use with the serializer
+    /// The global serialization options.
     /// </summary>
     public JsonSerializerOptions SerializerOptions { get; } = new JsonSerializerOptions();
 }
 
 /// <summary>
-/// Extensions for kafka options for easier adding consumers and producers
+/// Extension methods for configuring Kafka
 /// </summary>
 public static class KafkaOptionsExtensions
 {
 
     /// <summary>
-    /// Adds a consumer to the Consumer
+    /// Registers a Consumer
     /// </summary>
-    /// <typeparam name="THandler">The handler called when a message is consumed</typeparam>
-    /// <typeparam name="TKey">The type of the partition key.</typeparam>
-    /// <typeparam name="TValue">The type of the message</typeparam>
-    /// <param name="s">Instance of kafka options</param>
-    /// <param name="options">The options specific to this consumer</param>
-    public static void AddConsumer<THandler, TKey, TValue>(this KafkaOptions s, Action<ConsumerOptions>? options = null)
-        where THandler : IConsumerHandler<TKey, TValue>
+    /// <typeparam name="THandler">The handler that handles the message</typeparam>
+    /// <param name="s">The kafka options to extend.</param>
+    /// <param name="options">The consumer options</param>
+    public static void AddConsumer<THandler>(this KafkaOptions s, Action<ConsumerOptions>? options = null)
     {
-        var o = new ConsumerOptions(typeof(KafkaDeserializer<TKey>), typeof(KafkaDeserializer<TValue>))
+        var o = new ConsumerOptions()
         {
             BootstrapServers = s.BootstrapServers,
             SocketTimeoutMs = s.SocketTimeoutMs,
             GroupId = s.GroupId,
-            AutoOffsetReset = s.AutoOffsetReset
+            AutoOffsetReset = s.AutoOffsetReset,
+            JsonSerializerOptions = s.SerializerOptions,
         };
         options?.Invoke(o);
-        s.Consumers.Add<THandler, TKey, TValue>(o);
+        s.Consumers.Add<THandler>(o);
     }
 
     /// <summary>
-    /// Adds a producer to the feature
+    /// Registers a Producer.
     /// </summary>
-    /// <typeparam name="TKey">The partition key type.</typeparam>
-    /// <typeparam name="TValue">The message type produced.</typeparam>
-    /// <param name="s">Instance of the kafla options.</param>
-    /// <param name="options">The options specific to the producer.</param>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="s"></param>
+    /// <param name="options"></param>
     public static void AddProducer<TKey, TValue>(this KafkaOptions s, Action<ProducerOptions>? options = null)
     {
-        var o = new ProducerOptions(typeof(KafkaSerializer<TKey>), typeof(KafkaSerializer<TValue>))
+        var o = new ProducerOptions()
         {
             BootstrapServers = s.BootstrapServers,
             SocketTimeoutMs = s.SocketTimeoutMs,
+            JsonSerializerOptions = s.SerializerOptions,
         };
 
         options?.Invoke(o);

@@ -27,7 +27,6 @@ internal class ConsumerService<TKey, TValue> : BackgroundService
 
         await using var scope = _provider.CreateAsyncScope();
 
-        //var i = 0;
         while (!stoppingToken.IsCancellationRequested)
         {
             var handler = scope.ServiceProvider.GetRequiredService<IConsumerHandler<TKey, TValue>>();
@@ -36,13 +35,7 @@ internal class ConsumerService<TKey, TValue> : BackgroundService
             _log.LogDebug("{Key} - {Value}", consumeResult.Message.Key, consumeResult.Message.Value);
 
             await handler.Handle(consumeResult);
-
-            //_consumer.StoreOffset(consumeResult);
-
-            //if (i++ % 1000 == 0)
-            //{
-                _consumer.Commit(consumeResult);
-            //}
+            _consumer.Commit(consumeResult);
         }
     }
 

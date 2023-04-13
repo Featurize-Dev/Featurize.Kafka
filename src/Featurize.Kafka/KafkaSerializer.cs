@@ -1,11 +1,11 @@
-﻿using Confluent.Kafka;
+using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.Json;
 
 namespace Kafka;
 
-internal class KafkaSerializer<T> : ISerializer<T>
+internal sealed class KafkaSerializer<T> : ISerializer<T>
 {
     private readonly JsonSerializerOptions _options;
 
@@ -20,7 +20,7 @@ internal class KafkaSerializer<T> : ISerializer<T>
     }
 }
 
-internal class KafkaDeserializer<T> : IDeserializer<T>
+internal sealed class KafkaDeserializer<T> : IDeserializer<T>
 {
     private readonly JsonSerializerOptions _options;
     private readonly ILogger _logger;
@@ -30,6 +30,7 @@ internal class KafkaDeserializer<T> : IDeserializer<T>
         _options = options;
         _logger = logger;
     }
+
     public T Deserialize(ReadOnlySpan<byte> data, bool isNull, SerializationContext context)
     {
         try
@@ -45,8 +46,7 @@ internal class KafkaDeserializer<T> : IDeserializer<T>
         }
         catch (JsonException ex)
         {
-            var stringContent = Encoding.UTF8.GetString(data);
-            _logger.LogError(ex, "Failed to deserialize: '{0}'.", stringContent);
+            _logger.LogError(ex, "Failed to deserialize: '{0}'.", ex.Message);
             throw;
         }
     }
