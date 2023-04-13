@@ -19,7 +19,6 @@ public sealed class Producer<TKey, TValue>
     /// </summary>
     /// <param name="producer"></param>
     /// <param name="options"></param>
-    /// <param name="logger"></param>
     public Producer(IProducer<TKey, TValue> producer, ProducerOptions options)
     {
         _producer = producer;

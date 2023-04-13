@@ -4,15 +4,11 @@ using FluentAssertions;
 using Kafka;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KafkaFeature_Tests;
 internal class Create
 {
+    [Test]
     public void Should_set_options_field()
     {
         var options = new KafkaOptions();
