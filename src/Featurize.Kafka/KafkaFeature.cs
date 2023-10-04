@@ -123,4 +123,13 @@ public sealed class KafkaFeature :
         services.AddHostedService<ConsumerService<TKey, TValue>>();
         services.AddScoped<IConsumerHandler<TKey, TValue>, THandler>();
     }
+
+    /// <summary>
+    /// Configures all sub Features
+    /// </summary>
+    /// <param name="features"></param>
+    public void Configure(IFeatureCollection features)
+    {
+        features.Configure(Options);
+    }
 }
