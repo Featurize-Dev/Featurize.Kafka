@@ -1,4 +1,5 @@
 ﻿using Confluent.Kafka;
+using Featurize;
 using Featurize.Kafka;
 using FluentAssertions;
 using Kafka;
@@ -67,6 +68,28 @@ internal class Configure
         kafkaConsumer.Should().NotThrow<InvalidOperationException>();
         consumer.Should().NotThrow<InvalidOperationException>();
         handler.Should().NotThrow<InvalidOperationException>();
+    }
+
+    [Test]
+    public void should_register_from_subfeature()
+    {
+        var collection = new FeatureCollection();
+        
+        collection.AddKafka();
+
+        collection.Add<SubFeature>();
+
+        var feature = collection.Get<KafkaFeature>();
+
+        feature.Options.Consumers.Should().HaveCount(1);
+    }
+}
+
+public class SubFeature : IFeature, IConfigureOptions<KafkaOptions>
+{
+    public void Configure(KafkaOptions options)
+    {
+        options.AddConsumer<TestHandler>();
     }
 }
 
