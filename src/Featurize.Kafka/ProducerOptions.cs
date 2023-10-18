@@ -21,8 +21,8 @@ public sealed class ProducerOptions : ProducerConfig
     /// </summary>
     public LogHandler LogHandler { get; set; } = DefaultLogHandlers.HandleLogMessage;
 
-    /// <summary>
-    /// Serialization options for the producers
-    /// </summary>
-    public JsonSerializerOptions JsonSerializerOptions { get; set; } = new(JsonSerializerDefaults.Web);
+    ///// <summary>
+    ///// Serialization options for the producers
+    ///// </summary>
+    //public JsonSerializerOptions JsonSerializerOptions { get; set; } = new(JsonSerializerDefaults.Web);
 }

@@ -1,5 +1,6 @@
 using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Text.Json;
 
 namespace Kafka;
@@ -37,7 +38,13 @@ public sealed class KafkaOptions
     /// <summary>
     /// The global serialization options.
     /// </summary>
+    [Obsolete("Use Serializer Factory instead.")]
     public JsonSerializerOptions SerializerOptions { get; } = new JsonSerializerOptions();
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public IKafkaSerializerFactory SerializerFactory { get; set; } = new JsonSerializerFactory(NullLoggerFactory.Instance, new JsonSerializerOptions());
 }
 
 /// <summary>
@@ -60,7 +67,6 @@ public static class KafkaOptionsExtensions
             SocketTimeoutMs = s.SocketTimeoutMs,
             GroupId = s.GroupId,
             AutoOffsetReset = s.AutoOffsetReset,
-            JsonSerializerOptions = s.SerializerOptions,
         };
         options?.Invoke(o);
         s.Consumers.Add<THandler>(o);
@@ -79,7 +85,6 @@ public static class KafkaOptionsExtensions
         {
             BootstrapServers = s.BootstrapServers,
             SocketTimeoutMs = s.SocketTimeoutMs,
-            JsonSerializerOptions = s.SerializerOptions,
         };
 
         options?.Invoke(o);

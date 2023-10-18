@@ -52,7 +52,7 @@ internal class Configure
 
         var options = new KafkaOptions();
 
-        options.AddConsumer<TestHandler>();
+        options.AddConsumer<TestHandler>(x => x.Topic = "test");
 
         var feature = KafkaFeature.Create(options);
 
@@ -89,7 +89,7 @@ public class SubFeature : IFeature, IConfigureOptions<KafkaOptions>
 {
     public void Configure(KafkaOptions options)
     {
-        options.AddConsumer<TestHandler>();
+        options.AddConsumer<TestHandler>(x=>x.Topic = "test");
     }
 }
 

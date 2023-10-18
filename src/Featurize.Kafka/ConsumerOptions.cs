@@ -34,8 +34,8 @@ public sealed class ConsumerOptions : ConsumerConfig
     /// </summary>
     public LogHandler LogHandler { get; set; } = DefaultLogHandlers.HandleLogMessage;
 
-    /// <summary>
-    /// The json serialization options.
-    /// </summary>
-    public JsonSerializerOptions JsonSerializerOptions { get;set; } = new(JsonSerializerDefaults.Web);
+    ///// <summary>
+    ///// The json serialization options.
+    ///// </summary>
+    //public JsonSerializerOptions JsonSerializerOptions { get;set; } = new(JsonSerializerDefaults.Web);
 }

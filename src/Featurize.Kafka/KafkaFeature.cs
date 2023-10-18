@@ -50,6 +50,7 @@ public sealed class KafkaFeature :
     /// <inheritdoc />
     public void Configure(IServiceCollection services)
     {
+        services.AddSingleton(x => Options.SerializerFactory);
         RegisterConsumers(services);
         RegisterProducers(services);
     }
@@ -66,12 +67,14 @@ public sealed class KafkaFeature :
 
     private static void ProducerFactory<TKey, TValue>(IServiceCollection services, ProducerOptions options)
     {
-        services.AddSingleton<Confluent.Kafka.IProducer<TKey, TValue>>(s =>
+        services.AddSingleton<IProducer<TKey, TValue>>(s =>
         {
+            var serializerFactory = s.GetRequiredService<IKafkaSerializerFactory>();
             var loggerFactory = s.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<IProducer<TKey, TValue>>();
-            var keySerializer = new KafkaSerializer<TKey>(options.JsonSerializerOptions);
-            var valueSerializer = new KafkaSerializer<TValue>(options.JsonSerializerOptions);
+
+            var keySerializer = serializerFactory.CreateSerializer<TKey>();
+            var valueSerializer = serializerFactory.CreateSerializer<TValue>();
 
             var producer = new ProducerBuilder<TKey, TValue>(options)
                         .SetKeySerializer(keySerializer)
@@ -105,10 +108,12 @@ public sealed class KafkaFeature :
     {
         services.AddSingleton(s =>
         {
+            var serializerFactory = s.GetRequiredService<IKafkaSerializerFactory>();
             var loggerFactory = s.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<IConsumer<TKey, TValue>>();
-            var keyDeserializer = new KafkaDeserializer<TKey>(options.JsonSerializerOptions, loggerFactory.CreateLogger<KafkaDeserializer<TKey>>());
-            var valueDeserializer = new KafkaDeserializer<TValue>(options.JsonSerializerOptions, loggerFactory.CreateLogger<KafkaDeserializer<TValue>>());
+
+            var keyDeserializer = serializerFactory.CreateDeserializer<TKey>(); 
+            var valueDeserializer = serializerFactory.CreateDeserializer<TValue>();
 
             var consumer = new ConsumerBuilder<TKey, TValue>(options)
                     .SetKeyDeserializer(keyDeserializer)
