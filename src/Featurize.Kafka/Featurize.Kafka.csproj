@@ -2,12 +2,6 @@
 
   <Import Project="..\..\props\package.props" />
 
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Confluent.Kafka" Version="2.0.2" />
     <PackageReference Include="Featurize" Version="1.3.0" />
