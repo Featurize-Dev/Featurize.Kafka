@@ -1,2 +1,2 @@
 # Featurize.Kafka
-A Apache Kafka feature package for easy subscribe and produce to topics
+An Apache Kafka feature package that simplifies subscription and publishing to topics, making it seamless and user-friendly.
